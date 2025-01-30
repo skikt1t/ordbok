@@ -7,5 +7,6 @@ ordklasse TEXT,
 definisjon TEXT,
 kommentar TEXT
 );
-INSERT INTO ord VALUES(2,'example word 2','n','',NULL);
+INSERT INTO ord VALUES(3,'sol',NULL,NULL,NULL);
+INSERT INTO ord VALUES(4,'måne',NULL,NULL,NULL);
 COMMIT;
