@@ -1,0 +1,14 @@
+# Ignorer databasefiler
+*.db
+*.sqlite
+*.db-journal
+
+# Ignorer IDE/editor-filer
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorer Pyhon-cache
+__pycache__/
+*.pyc
