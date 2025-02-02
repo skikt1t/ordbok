@@ -13,15 +13,7 @@ PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
 
--- Lager globale tabeller
--- Vurdere å bruke kortformene som primary key i stedet?
-
-
-
--- Semantikk og morfologi
-
-
--- Grunnkonsepter
+-- Tabell for grunnkonsepter (concepts)
 
     CREATE TABLE concepts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,13 +22,7 @@ BEGIN TRANSACTION;
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-
--- Fonetikk og fonologi
--- Foner
--- Fonemer
--- Stavelser
-
--- Ordklasser
+-- Tabell for ordklasser (partsofspeech)
 
     CREATE TABLE partsofspeech (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,20 +30,7 @@ BEGIN TRANSACTION;
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-
-/*
--- Glosser
-
-    CREATE TABLE words (
-        id INTEGER PRIMARY KEY AUTOINCREMENT
-        gloss
-        partsofspeech_abbr TEXT,
-        gloss TEXT NOT NULL UNIQUE, 
-        desc TEXT
-    );
-*/
-
--- Språk
+-- Tabell for språk (languages)
 
     CREATE TABLE languages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +38,7 @@ BEGIN TRANSACTION;
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
--- Ord
+-- Tabell for ord (words)
 
     CREATE TABLE words (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,9 +52,7 @@ BEGIN TRANSACTION;
         FOREIGN KEY (language_id) REFERENCES languages(id)
     );
 
-
-
--- Relasjonstabell mellom grunnkonsepter og glosser
+-- Relasjonstabell mellom grunnkonsepter og ord (concept_word)
 
     CREATE TABLE concept_word (
         concept_id INTEGER NOT NULL,
@@ -104,34 +75,32 @@ END;
 */
 
 
-/*
-
-CREATE VIEW testpråkView AS
-    SELECT 
-    FROM testspråk t
-
-TestspråkView
-    ordform
-    ordklasse
-    gloss
-    kommentar
-*/
+    CREATE VIEW word_details AS
+        SELECT 
+            w.lemma,
+            w.gloss,
+            w.desc AS word_desc,
+            l.name AS language,
+            p.name AS part_of_speech,
+            c.desc AS concept_desc
+        FROM words w
+        LEFT JOIN languages l ON w.language_id = l.id
+        LEFT JOIN partsofspeech p ON w.partofspeech_id = p.id
+        LEFT JOIN concept_word cw ON w.id = cw.word_id
+        LEFT JOIN concepts c ON cw.concept_id = c.id;
 
 
 COMMIT;
 
 
-
+--  Data til ordklasser (partsofspeech)
 
     INSERT INTO partsofspeech (id, name) VALUES
         (0, 'not specified'), 
         (1, 'noun'),
         (2, 'verb');
 
+--  Data til språk (languages)
+
     INSERT INTO languages (id, name) VALUES 
-        (0, 'ikke angitt');
-
--- Legg til constraints (hvis ikke inkludert i tabellopprettelsen)
--- I SQLite må FOREIGN KEY-konstraintene defineres i CREATE TABLE-setningen. Det er ikke mulig å legge til FOREIGN KEY-restriksjoner etterpå med ALTER TABLE, slik man kan i for eksempel PostgreSQL eller MySQL.
-
--- Sett inn eksempeldata (dette gjøres av egne script)
+        (0, 'not specified');
