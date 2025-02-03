@@ -1,11 +1,11 @@
 -- Slett eksisterende tabeller
 
-DROP TABLE IF EXISTS concepts;
+DROP TABLE IF EXISTS meanings;
 DROP TABLE IF EXISTS partsofspeech;
 DROP TABLE IF EXISTS languages;
 DROP TABLE IF EXISTS words;
-DROP TABLE IF EXISTS concept_word;
-
+DROP TABLE IF EXISTS meaning_word;
+DROP VIEW IF EXISTS dictionary;
 
 -- Opprett tabeller
 
@@ -13,54 +13,59 @@ PRAGMA foreign_keys = ON;
 
 BEGIN TRANSACTION;
 
--- Tabell for grunnkonsepter (concepts)
+-- Tabell for betydninger (meanings)
+-- 2025-02-03: Utelater kategorier for nå, men se /drafts/concept_categories, ev. bruke enkel kategorisering som entity/event?
 
-    CREATE TABLE concepts (
+    CREATE TABLE meanings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        desc TEXT,
-        cat TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        desc TEXT NOT NULL
+    --  cat TEXT,
+    --  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Tabell for ordklasser (partsofspeech)
 
     CREATE TABLE partsofspeech (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        name TEXT NOT NULL
+    --  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
 -- Tabell for språk (languages)
+-- Inkluderer variabel desc, kan brukes som senere kategorisering til natlang, conlang
 
     CREATE TABLE languages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        name TEXT NOT NULL,
+        desc TEXT
+    --  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
 -- Tabell for ord (words)
+-- Inkluderer variabel class som seinere kan systematiseres mer (f.eks. brukes for kjønn)
 
     CREATE TABLE words (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         lemma TEXT,
-        gloss TEXT NOT NULL UNIQUE,
-        desc TEXT,
+        gloss TEXT NOT NULL,
+        class TEXT,
         partofspeech_id INT DEFAULT 0,
         language_id INT DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    --  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (partofspeech_id) REFERENCES partsofspeech(id),
         FOREIGN KEY (language_id) REFERENCES languages(id)
     );
 
 -- Relasjonstabell mellom grunnkonsepter og ord (concept_word)
 
-    CREATE TABLE concept_word (
-        concept_id INTEGER NOT NULL,
+    CREATE TABLE meaning_word (
+        meaning_id INTEGER NOT NULL,
         word_id INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (concept_id, word_id),
+    --  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (meaning_id, word_id),
+        FOREIGN KEY (meaning_id) REFERENCES meanings(id)
         FOREIGN KEY (word_id) REFERENCES words(id)
-        FOREIGN KEY (concept_id) REFERENCES concepts(id)
+
     );
 
 
@@ -75,19 +80,19 @@ END;
 */
 
 
-    CREATE VIEW word_details AS
+    CREATE VIEW dictionary AS
         SELECT 
             w.lemma,
+            p.name AS partofspeech,
+            w.class,
             w.gloss,
-            w.desc AS word_desc,
-            l.name AS language,
-            p.name AS part_of_speech,
-            c.desc AS concept_desc
+            m.desc AS definition,
+            l.name AS language
         FROM words w
         LEFT JOIN languages l ON w.language_id = l.id
         LEFT JOIN partsofspeech p ON w.partofspeech_id = p.id
-        LEFT JOIN concept_word cw ON w.id = cw.word_id
-        LEFT JOIN concepts c ON cw.concept_id = c.id;
+        LEFT JOIN meaning_word mw ON w.id = mw.word_id
+        LEFT JOIN meanings m ON mw.meaning_id = m.id;
 
 
 COMMIT;
@@ -96,11 +101,23 @@ COMMIT;
 --  Data til ordklasser (partsofspeech)
 
     INSERT INTO partsofspeech (id, name) VALUES
-        (0, 'not specified'), 
-        (1, 'noun'),
-        (2, 'verb');
+        (0, 'Not specified'),
+        (1, 'Pronoun'),
+        (2, 'Noun'),
+        (3, 'Verb'),
+        (4, 'Adjective'),
+        (5, 'Adverb'),
+        (6, 'Preposition'),
+        (7, 'Postposition'),
+        (8, 'Determiner'),
+        (9, 'Conjunction'),
+        (10, 'Interjection'),
+        (11, 'Particle');
+
 
 --  Data til språk (languages)
 
-    INSERT INTO languages (id, name) VALUES 
-        (0, 'not specified');
+    INSERT INTO languages (id, name, desc) VALUES 
+        (0, 'Not specified', NULL),
+        (1, 'English', 'Natlang'),
+        (2, 'Norwegian', 'Natlang');
