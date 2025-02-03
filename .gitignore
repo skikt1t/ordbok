@@ -12,3 +12,6 @@
 # Ignorer Pyhon-cache
 __pycache__/
 *.pyc
+
+¤ Ignorer sikkerhetskopier
+db/backups/
