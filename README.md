@@ -2,6 +2,7 @@
 
 En database for konstruerte språk. På sikt også applikasjon for aksessering og editering.
 
+[wiki](https://github.com/soleiriken/conlanging/wiki)
 
 ## Struktur
 
